@@ -68,5 +68,20 @@ default_env = dict(env, XDG_DATA_HOME="")
 subprocess.run([str(repo / "lib/sync-ksyntax-theme")], env=default_env, check=True)
 default_path = Path.home() / ".local/share/org.kde.syntax-highlighting/themes/hyprchroma.theme"
 assert default_path.is_file()
-print("PASS empty XDG_DATA_HOME falls back to the standard data directory")
+saved_data_home = os.environ["XDG_DATA_HOME"]
+os.environ["XDG_DATA_HOME"] = ""
+try:
+    assert state.syntax_theme_path() == default_path
+    default_state = state_dir / "empty-xdg"
+    state.snapshot(default_state, Path.home() / ".local/share/hyprchroma", "qt-kde")
+    default_manifest = json.loads((default_state / "original/manifest.json").read_text())
+    assert default_manifest["files"]["hyprchroma_syntax"]["path"] == str(default_path)
+    state.restore_target_captured(default_state / "original", default_manifest, "qt-kde")
+    assert not default_path.exists()
+    subprocess.run([str(repo / "lib/sync-ksyntax-theme")], env=default_env, check=True)
+    state.restore_target_stock(default_state / "original", default_manifest, "qt-kde")
+    assert not default_path.exists()
+finally:
+    os.environ["XDG_DATA_HOME"] = saved_data_home
+print("PASS empty XDG_DATA_HOME generation and both restore modes use the standard directory")
 TEST
