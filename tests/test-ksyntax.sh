@@ -64,4 +64,9 @@ assert light["editor-colors"]["BackgroundColor"] == "#eeeeee"
 assert light["editor-colors"]["TextSelection"] == "#123456"
 assert light["text-styles"]["Normal"]["text-color"] == "#111111"
 print("PASS light palettes use the same automatic-selection contract")
+default_env = dict(env, XDG_DATA_HOME="")
+subprocess.run([str(repo / "lib/sync-ksyntax-theme")], env=default_env, check=True)
+default_path = Path.home() / ".local/share/org.kde.syntax-highlighting/themes/hyprchroma.theme"
+assert default_path.is_file()
+print("PASS empty XDG_DATA_HOME falls back to the standard data directory")
 TEST

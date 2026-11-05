@@ -65,7 +65,7 @@ def main():
         raw = subprocess.check_output([str(lib / "hyprchroma-palette"), "--all"], text=True)
     palette = dict(row.split("\t", 1) for row in raw.splitlines() if "\t" in row)
     content = json.dumps(build_theme(palette), indent=4) + "\n"
-    data = Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share")))
+    data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
     path = data / "org.kde.syntax-highlighting/themes/hyprchroma.theme"
     if path.is_file() and not path.is_symlink() and path.read_text() == content:
         return
