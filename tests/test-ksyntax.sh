@@ -6,8 +6,6 @@ export HOME=$ROOT/home XDG_DATA_HOME=$ROOT/data XDG_STATE_HOME=$ROOT/state
 unset HYPRCHROMA_PALETTE_TSV
 mkdir -p "$HOME"
 python3 - "$REPO" <<'TEST'
-import importlib.machinery
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -53,7 +51,17 @@ manifest = json.loads((state_dir / "original/manifest.json").read_text())
 entry = manifest["files"]["hyprchroma_syntax"]
 assert not entry["existed"]
 assert "hyprchroma_syntax" in state.TARGET_FILE_KEYS["qt-kde"]
-state.restore_file(state_dir / "original", entry)
+state.restore_target_captured(state_dir / "original", manifest, "qt-kde")
 assert not path.exists()
-print("PASS generated theme is not captured as original and is removed on restore")
+print("PASS captured restore removes the generated theme through the Qt KDE lifecycle")
+subprocess.run([str(repo / "lib/sync-ksyntax-theme")], env=env, check=True)
+state.restore_target_stock(state_dir / "original", manifest, "qt-kde")
+assert not path.exists()
+print("PASS stock restore removes generated themes from XDG_DATA_HOME too")
+p.update(dark_background="#eeeeee", foreground="#111111", accent="#123456")
+light = m.build_theme(p)
+assert light["editor-colors"]["BackgroundColor"] == "#eeeeee"
+assert light["editor-colors"]["TextSelection"] == "#123456"
+assert light["text-styles"]["Normal"]["text-color"] == "#111111"
+print("PASS light palettes use the same automatic-selection contract")
 TEST

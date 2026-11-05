@@ -1709,9 +1709,7 @@ def snapshot(state_dir, data_dir, target):
     elif target == "qt-kde":
         snapshot_file(snapshot_dir, manifest, "kdeglobals", home / ".config/kdeglobals")
         snapshot_file(snapshot_dir, manifest, "hyprchroma_colors", home / ".local/share/color-schemes/Hyprchroma.colors")
-        syntax_data = Path(os.environ.get("XDG_DATA_HOME", str(home / ".local/share")))
-        snapshot_file(snapshot_dir, manifest, "hyprchroma_syntax",
-                      syntax_data / "org.kde.syntax-highlighting/themes/hyprchroma.theme")
+        snapshot_file(snapshot_dir, manifest, "hyprchroma_syntax", syntax_theme_path())
     elif target == "pear":
         snapshot_file(snapshot_dir, manifest, "pear_config", home / ".config/YouTube Music/config.json")
         snapshot_file(snapshot_dir, manifest, "pear_css", home / ".config/YouTube Music/hyprchroma.css")
@@ -1753,6 +1751,11 @@ def restore_file(snapshot_dir, entry):
 def restore_gsettings(values):
     for key, value in values.items():
         subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", key, value], check=False)
+
+
+def syntax_theme_path():
+    data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+    return data / "org.kde.syntax-highlighting/themes/hyprchroma.theme"
 
 
 def config_home():
@@ -4243,6 +4246,7 @@ def restore_target_stock(snapshot_dir, manifest, target):
                                for key, value in manifest.get("gsettings", {}).items()
                                if key in OMARCHY_OWNED_GSETTINGS})
     elif target == "qt-kde":
+        safe_unlink(syntax_theme_path())
         # Omarchy pins no per-app color scheme, so it has no stock value to
         # offer. The recorded one is the app's own: Hyprchroma only ever deleted
         # these keys and never wrote them, so it cannot be Hyprchroma output.
