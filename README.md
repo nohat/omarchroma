@@ -239,6 +239,20 @@ Generated output is never included in backups.
 <Vivaldi profile>/Preferences            the Omarchy theme, selected
 ```
 
+## Kate, KWrite and KTextEditor syntax colors
+
+Qt/KDE sync also generates `~/.local/share/org.kde.syntax-highlighting/themes/hyprchroma.theme`
+(or the equivalent under `XDG_DATA_HOME`). It derives editor and syntax colors from
+the same resolved palette as `Hyprchroma.colors`. With **Automatic Selection** enabled
+in the editor's Color Themes settings, KSyntaxHighlighting matches the generated
+background and selection colors to the application palette and selects Hyprchroma.
+Fully close and reopen the application after a theme change, as for the interface.
+
+No application font, syntax definition, session or explicit theme selection is
+changed. Applications with an explicitly chosen editor theme keep it. Switching
+Qt/KDE sync off removes the generated theme through the existing restore mechanism.
+Flatpak editor-theme discovery is not covered by this integration.
+
 ## Global Keybindings
 
 Omarchroma does not edit your Hyprland config. Bind your own keys in

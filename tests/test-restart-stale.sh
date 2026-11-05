@@ -710,7 +710,7 @@ for a in "$@"; do
   esac
   case $prev in
     --path) [[ $command == prepare-lock ]] && : > "$a"
-            [[ $command == write-file ]] && cat > "$a"
+            [[ $command == write-file ]] && { mkdir -p "${a%/*}"; cat > "$a"; }
             [[ $command == ensure-import ]] && echo "@import url(\"hyprchroma.css\");" > "$a" ;;
   esac
   prev=$a

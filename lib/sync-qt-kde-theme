@@ -461,6 +461,9 @@ else:
 PY
 )
 
+# A matching editor theme lets Kate/KWrite Automatic Selection follow this palette.
+"$HYPRCHROMA_LIB/sync-ksyntax-theme"
+
 # Ask running apps to re-read kdeglobals, best effort.
 #
 # The KF5-era org.kde.KGlobalSettings.notifyChange this used to send has no

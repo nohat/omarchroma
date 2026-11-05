@@ -25,7 +25,7 @@ for a in "$@"; do
   esac
   case $prev in
     --path) [[ ${lock:-0} == 1 ]] && : > "$a"
-            [[ ${writing:-0} == 1 ]] && cat > "$a" ;;
+            [[ ${writing:-0} == 1 ]] && { mkdir -p "${a%/*}"; cat > "$a"; } ;;
   esac
   prev=$a
 done

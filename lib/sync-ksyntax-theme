@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Generate the editor theme selected by KSyntaxHighlighting::themeForPalette.
+
+No application settings are changed: Automatic Selection matches Colors:View
+BackgroundNormal and Colors:Selection BackgroundNormal in Hyprchroma.colors.
+"""
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+
+def build_theme(p):
+    required = ("dark_background", "background", "lighter_background", "foreground",
+                "dark_foreground", "light_foreground", "accent", "selection",
+                "selection_foreground", "red", "green", "yellow", "blue", "magenta")
+    for key in required:
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", p.get(key, "")):
+            raise ValueError(f"invalid palette color: {key}")
+    roles = {
+        "Normal": "foreground", "Keyword": "magenta", "Function": "blue",
+        "Variable": "foreground", "ControlFlow": "magenta", "Operator": "blue",
+        "BuiltIn": "blue", "Extension": "blue", "Preprocessor": "magenta",
+        "Attribute": "yellow", "Char": "green", "SpecialChar": "blue",
+        "String": "green", "VerbatimString": "green", "SpecialString": "blue",
+        "Import": "magenta", "DataType": "yellow", "DecVal": "yellow",
+        "BaseN": "yellow", "Float": "yellow", "Constant": "yellow",
+        "Comment": "dark_foreground", "Documentation": "light_foreground",
+        "Annotation": "blue", "CommentVar": "blue", "RegionMarker": "blue",
+        "Information": "blue", "Warning": "yellow", "Alert": "red",
+        "Error": "red", "Others": "foreground",
+    }
+    editor = {
+        "BackgroundColor": "dark_background", "TextSelection": "accent",
+        "CurrentLine": "background", "IconBorder": "dark_background",
+        "LineNumbers": "dark_foreground", "CurrentLineNumber": "foreground",
+        "Separator": "lighter_background", "WordWrapMarker": "lighter_background",
+        "IndentationLine": "lighter_background", "TabMarker": "lighter_background",
+        "BracketMatching": "selection", "CodeFolding": "selection",
+        "SearchHighlight": "selection", "ReplaceHighlight": "selection",
+        "MarkBookmark": "blue", "MarkBreakpointActive": "red",
+        "MarkBreakpointReached": "yellow", "MarkBreakpointDisabled": "dark_foreground",
+        "MarkExecution": "green", "MarkWarning": "yellow", "MarkError": "red",
+        "ModifiedLines": "yellow", "SavedLines": "green", "SpellChecking": "red",
+        "TemplateBackground": "background", "TemplatePlaceholder": "selection",
+        "TemplateFocusedPlaceholder": "selection", "TemplateReadOnlyPlaceholder": "lighter_background",
+    }
+    return {
+        "metadata": {"name": "Hyprchroma", "revision": 1,
+                     "license": "SPDX-License-Identifier: MIT"},
+        "editor-colors": {key: p[value] for key, value in editor.items()},
+        "text-styles": {key: {"text-color": p[value],
+                              "selected-text-color": p["selection_foreground"]}
+                        for key, value in roles.items()},
+        "custom-styles": {},
+    }
+
+
+def main():
+    lib = Path(__file__).resolve().parent
+    raw = os.environ.get("HYPRCHROMA_PALETTE_TSV")
+    if raw is None:
+        raw = subprocess.check_output([str(lib / "hyprchroma-palette"), "--all"], text=True)
+    palette = dict(row.split("\t", 1) for row in raw.splitlines() if "\t" in row)
+    content = json.dumps(build_theme(palette), indent=4) + "\n"
+    data = Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share")))
+    path = data / "org.kde.syntax-highlighting/themes/hyprchroma.theme"
+    if path.is_file() and not path.is_symlink() and path.read_text() == content:
+        return
+    subprocess.run([str(lib / "hyprchroma-state"), "write-file", "--path", str(path),
+                    "--mode", "644"], input=content, text=True, check=True)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (ValueError, OSError, subprocess.SubprocessError) as error:
+        sys.exit(f"sync-ksyntax-theme: {error}")

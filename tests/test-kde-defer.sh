@@ -24,7 +24,7 @@ for a in "$@"; do
   [[ $a == write-file ]] && writing=1
   if [[ $prev == --path ]]; then
     [[ ${lock:-0} == 1 ]] && { : > "$a"; exit 0; }
-    [[ ${writing:-0} == 1 ]] && { cat > "$a"; exit 0; }
+    [[ ${writing:-0} == 1 ]] && { mkdir -p "${a%/*}"; cat > "$a"; exit 0; }
   fi
   prev=$a
 done

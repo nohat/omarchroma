@@ -152,7 +152,7 @@ for a in "$@"; do
   case $a in prepare-lock) lock=1 ;; write-file) writing=1 ;; esac
   case $prev in
     --path) [[ ${lock:-0} == 1 ]] && : > "$a"
-            [[ ${writing:-0} == 1 ]] && cat > "$a" ;;
+            [[ ${writing:-0} == 1 ]] && { mkdir -p "${a%/*}"; cat > "$a"; } ;;
   esac
   prev=$a
 done

@@ -43,6 +43,7 @@ for a in "\$@"; do
   case \$prev in
     --path) [[ \${lock:-0} == 1 ]] && : > "\$a"
             if [[ \${writing:-0} == 1 ]]; then
+              mkdir -p "\${a%/*}"
               cat > "\$a"
               [[ \$a == "$XDG_STATE_HOME/hyprchroma/last-stale-notify" ]] && \
                 echo x >> "$ROOT/notify-writes.log"

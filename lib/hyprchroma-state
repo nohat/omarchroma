@@ -102,7 +102,7 @@ TARGETS = ("gtk", "qt-kde", "pear", "flatpak", "browsers")
 # reverted on its own when its toggle is switched off.
 TARGET_FILE_KEYS = {
     "gtk": ("gtk3_css", "gtk4_css", "gtk3_hyprchroma_css", "gtk4_hyprchroma_css"),
-    "qt-kde": ("kdeglobals", "hyprchroma_colors"),
+    "qt-kde": ("kdeglobals", "hyprchroma_colors", "hyprchroma_syntax"),
     "pear": ("pear_config", "pear_css"),
     "flatpak": (),
     "browsers": (),
@@ -508,6 +508,7 @@ GENERATED_PROBES = {
     "gtk4_css": has_hyprchroma_import,
     "kdeglobals": generated_kdeglobals,
     "hyprchroma_colors": always_generated,
+    "hyprchroma_syntax": always_generated,
     "pear_css": always_generated,
 }
 
@@ -517,7 +518,7 @@ GENERATED_PROBES = {
 # header is ours whole; one without it is the user's and is captured normally.
 # gtk.css is the user's: only an import line is added to it, so it is backed
 # up as their file. What is wholly generated is the stylesheet it points at.
-WHOLLY_GENERATED = frozenset({"hyprchroma_colors", "pear_css",
+WHOLLY_GENERATED = frozenset({"hyprchroma_colors", "pear_css", "hyprchroma_syntax",
                               "gtk3_hyprchroma_css", "gtk4_hyprchroma_css"})
 
 # kdeglobals is the one file Hyprchroma shares with its owner: KDE and the user
@@ -1708,6 +1709,9 @@ def snapshot(state_dir, data_dir, target):
     elif target == "qt-kde":
         snapshot_file(snapshot_dir, manifest, "kdeglobals", home / ".config/kdeglobals")
         snapshot_file(snapshot_dir, manifest, "hyprchroma_colors", home / ".local/share/color-schemes/Hyprchroma.colors")
+        syntax_data = Path(os.environ.get("XDG_DATA_HOME", str(home / ".local/share")))
+        snapshot_file(snapshot_dir, manifest, "hyprchroma_syntax",
+                      syntax_data / "org.kde.syntax-highlighting/themes/hyprchroma.theme")
     elif target == "pear":
         snapshot_file(snapshot_dir, manifest, "pear_config", home / ".config/YouTube Music/config.json")
         snapshot_file(snapshot_dir, manifest, "pear_css", home / ".config/YouTube Music/hyprchroma.css")
